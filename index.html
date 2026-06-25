@@ -1710,10 +1710,13 @@ function renderLog() {
     el.innerHTML=`<div class="empty-log"><svg width="34" height="42" viewBox="0 0 36 44"><rect x="16.5" y="22" width="3" height="18" rx="1.5" fill="#4A7A52" opacity="0.4"/><ellipse cx="18" cy="18" rx="5" ry="7" fill="#E8A8B0" opacity="0.35"/></svg><p>${searchQuery ? 'No results for "'+escH(searchQuery)+'"' : 'No entries yet — log your first transaction above'}</p></div>`;
     return;
   }
-  // Running balance per entry — entries already time-sorted by addEntry
-  const sorted_entries = [...filtered].sort((a,b)=>a.time.localeCompare(b.time));
+  // Running balance per entry — calculate on ALL entries so filtered view shows correct balance
+  const all_sorted = [...entries].sort((a,b)=>(a.time||'00:00').localeCompare(b.time||'00:00'));
   let run = 0;
-  const withBal = sorted_entries.map(e=>{ run+=e.amount; return {...e, runBal:run}; });
+  const balMap = {};
+  all_sorted.forEach(e=>{ run+=e.amount; balMap[e.id]=run; });
+  const sorted_entries = [...filtered].sort((a,b)=>(a.time||'00:00').localeCompare(b.time||'00:00'));
+  const withBal = sorted_entries.map(e=>({ ...e, runBal: balMap[e.id]??e.amount }));
   el.innerHTML = withBal.map(e=>`
     <div class="entry" id="ent-${e.id}">
       <span class="entry-time">${e.time}</span>
@@ -1887,7 +1890,7 @@ function toggleGoal() {
   goalEditing=!goalEditing;
   document.getElementById('goal-inp').classList.toggle('show',goalEditing);
   document.getElementById('goal-editbtn').textContent=goalEditing?'save':'edit';
-  if(goalEditing){document.getElementById('goal-inp').value=goalAmt?'':'';document.getElementById('goal-inp').focus();}
+  if(goalEditing){document.getElementById('goal-inp').value=goalAmt||'';document.getElementById('goal-inp').focus();}
   else saveGoal();
 }
 function saveGoal() {
@@ -2022,7 +2025,7 @@ function renderReports() {
     rptWeek = Math.max(0, weeks.length - 1);
   }
 
-  const wkEntries = wkSum.entries.sort((a,b) => a.dayKey.localeCompare(b.dayKey) || a.time.localeCompare(b.time));
+  const wkEntries = wkSum.entries.sort((a,b) => a.dayKey.localeCompare(b.dayKey) || (a.time||'00:00').localeCompare(b.time||'00:00'));
   const netColor = wkSum.net >= 0 ? 'var(--fit)' : 'var(--red)';
 
   detailEl.innerHTML = `
@@ -2105,7 +2108,7 @@ function calcStreak() {
     const x=new Date(d); x.setDate(x.getDate()-i);
     const k=localKey(x);
     const hasReps=(pState.days[k]?.entries||[]).reduce((s,e)=>s+e.reps,0)>0;
-    if(hasReps){ cur++; best=Math.max(best,cur); if(i===0||streak>0||cur>0) streak=cur; }
+    if(hasReps){ cur++; best=Math.max(best,cur); }
     else { if(i>0) break; }
   }
   return {streak:cur,best};
@@ -2644,10 +2647,10 @@ async function cloudSync() {
       const m = _mergePuState(pState, map['tulip_pu']);
       if(JSON.stringify(m)!==JSON.stringify(pState)) { pState=m; localStorage.setItem('tulip_pu',JSON.stringify(pState)); changed=true; }
     }
-    if(map['tulip_goal'] && parseFloat(map['tulip_goal'])>goalAmt) {
+    if(map['tulip_goal'] && parseFloat(map['tulip_goal'])!==goalAmt) {
       goalAmt=parseFloat(map['tulip_goal']); localStorage.setItem('tulip_goal',goalAmt); changed=true;
     }
-    if(map['tulip_pugoal'] && parseInt(map['tulip_pugoal'])>puGoal) {
+    if(map['tulip_pugoal'] && parseInt(map['tulip_pugoal'])!==puGoal) {
       puGoal=parseInt(map['tulip_pugoal']); localStorage.setItem('tulip_pugoal',puGoal); changed=true;
     }
     if(map['tulip_cur'] && map['tulip_cur']!==currency) {
