@@ -631,21 +631,22 @@ input[type="time"]::-webkit-calendar-picker-indicator{filter:invert(0.4);cursor:
 <!-- ═══ MONEY PAGE ═══ -->
 <div id="money-page">
   <div class="day-nav" id="day-nav"></div>
+
+  <!-- Net Worth Snapshot — always above Today's Net -->
+  <div class="nw-banner" id="nw-banner" style="margin:10px 16px 0;">
+    <div class="nw-left">
+      <div class="nw-label">Net Worth</div>
+      <div class="nw-val" id="nw-val">$0.00</div>
+      <div class="nw-sub" id="nw-sub">All-time balance</div>
+    </div>
+    <div class="nw-spark">
+      <svg id="nw-spark-svg" viewBox="0 0 80 36" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+
   <div class="app">
     <div class="main">
       <div class="closed-notice" id="closed-notice">⟳ Viewing a past day — edits still work.</div>
-
-      <!-- Net Worth Snapshot -->
-      <div class="nw-banner" id="nw-banner">
-        <div class="nw-left">
-          <div class="nw-label">Net Worth</div>
-          <div class="nw-val" id="nw-val">$0.00</div>
-          <div class="nw-sub" id="nw-sub">All-time balance</div>
-        </div>
-        <div class="nw-spark">
-          <svg id="nw-spark-svg" viewBox="0 0 80 36" preserveAspectRatio="none"></svg>
-        </div>
-      </div>
 
       <!-- Search -->
       <div class="search-wrap" id="search-wrap" style="margin-top:12px;">
