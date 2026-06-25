@@ -1153,7 +1153,7 @@ function addEntry() {
   const note = document.getElementById('qa-note').value.trim();
   const time = document.getElementById('qa-time').value || nowTime();
   const amount = mode==='expense' ? -Math.abs(raw) : Math.abs(raw);
-  const day  = getDay(mState, todayKey());
+  const day  = getDay(mState, currentDay);
   day.entries.push({id:Date.now(), amount, desc, note, time, type:mode});
   day.entries.sort((a,b)=>a.time.localeCompare(b.time));
   saveM();
@@ -1161,7 +1161,6 @@ function addEntry() {
   document.getElementById('qa-desc').value = '';
   document.getElementById('qa-note').value = '';
   document.getElementById('qa-time').value = nowTime();
-  if(currentDay!==todayKey()) currentDay = todayKey();
   renderMoney();
   showToast(mode==='income'?`+${fmt(amount)} logged`:`-${fmt(Math.abs(amount))} logged`);
   if(mode==='expense') checkLimitAlerts(desc);
