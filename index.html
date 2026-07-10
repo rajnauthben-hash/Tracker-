@@ -795,7 +795,7 @@ function chartWidthForKeys(keys, wrap){
   // Keep the 7-day home charts inside the card so they do not look zoomed or stretched.
   // Only expand wider than the visible area when more than 7 points are shown.
   if(len<=7) return available;
-  return Math.max(available, Math.min(720, 34 * len));
+  return Math.max(available, 40 * len);
 }
 function prepareChartShell(svg){
   if(!svg) return null;
@@ -871,9 +871,10 @@ function premiumChartSVG(keys,vals,kind,w=340){
     grid+=`<path class="${i===0||i===scale.ticks.length-1?'spark-major':'spark-minor'}" d="M0 ${y.toFixed(1)}H${w-padR}"></path>`;
   });
   grid+=`<path class="spark-axis-line" d="M0 ${h-padB}H${w-padR}"></path>`;
-  chartTickIndexes(keys.length).forEach((idx)=>{
+  (keys.length>14?(()=>{const s=new Set([0,keys.length-1]);keys.forEach((k,i)=>{if(i>0&&i<keys.length-1&&fromKey(k).getDate()===1)s.add(i)});return[...s].sort((a,b)=>a-b)})():chartTickIndexes(keys.length)).forEach((idx)=>{
     const p=pts[idx];
-    const label=compactDateLabel(keys[idx],idx,keys.length);
+    const d=fromKey(keys[idx]);
+    const label=keys.length>14?(idx===0||idx===keys.length-1?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):d.toLocaleDateString('en-US',{month:'short'})):compactDateLabel(keys[idx],idx,keys.length);
     let anchor='middle',x=p.x;
     if(idx===0){anchor='start';x=padL;}
     if(idx===keys.length-1){anchor='end';x=w-padR;}
@@ -917,10 +918,19 @@ function attachChartInteraction(svg,keys,vals,kind){
   const hide=()=>{svg.querySelectorAll('.spark-hover-line,.spark-hover-dot').forEach(el=>el.classList.remove('show'));if(tip)tip.classList.remove('show')};
   svg.onpointermove=e=>show(e.clientX);svg.onpointerdown=e=>show(e.clientX);svg.onpointerleave=hide;svg.onclick=e=>show(e.clientX);svg.ontouchstart=e=>{if(e.touches&&e.touches[0])show(e.touches[0].clientX)};svg.ontouchmove=e=>{if(e.touches&&e.touches[0])show(e.touches[0].clientX)};
 }
+function allHistoryKeys(kind){
+  const src=kind==='money'?(mState.days||{}):(pState.days||{});
+  const dataKeys=Object.keys(src);
+  if(!dataKeys.length)return lastDays(30);
+  dataKeys.sort();
+  const start=fromKey(dataKeys[0]);const today=new Date();const out=[];
+  for(const d=new Date(start);d<=today;d.setDate(d.getDate()+1))out.push(key(new Date(d)));
+  return out.length?out:lastDays(30);
+}
 function renderNetSparkline(){
   const svg=document.getElementById('net-spark-svg'); if(!svg) return;
   const shell=prepareChartShell(svg);
-  const keys=lastDays(7), vals=keys.map(k=>netWorthAt(k));
+  const keys=allHistoryKeys('money'), vals=keys.map(k=>netWorthAt(k));
   const width=chartWidthForKeys(keys, shell ? shell.wrap : null);
   svg.style.setProperty('--chart-width',width+'px');
   svg.setAttribute('viewBox',`0 0 ${width} 174`);
@@ -934,7 +944,7 @@ function renderNetSparkline(){
 function renderPushSparkline(id,n=7){
   const svg=document.getElementById(id); if(!svg) return;
   const shell=prepareChartShell(svg);
-  const keys=lastDays(n), vals=keys.map(k=>sumPush([k]).total);
+  const keys=allHistoryKeys('push'), vals=keys.map(k=>sumPush([k]).total);
   const width=chartWidthForKeys(keys, shell ? shell.wrap : null);
   svg.style.setProperty('--chart-width',width+'px');
   svg.setAttribute('viewBox',`0 0 ${width} 174`);
