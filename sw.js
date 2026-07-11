@@ -1,4 +1,4 @@
-const CACHE = 'tracker-v3.7';
+const CACHE = 'tracker-v3.8';
 const CORE  = ['index.html', 'manifest.json', 'icon.svg'];
 
 self.addEventListener('install', e => {
