@@ -929,8 +929,8 @@ function allHistoryKeys(kind){
   const dataKeys=Object.keys(src);
   if(!dataKeys.length)return lastDays(30);
   dataKeys.sort();
-  const start=fromKey(dataKeys[0]);const today=new Date();const out=[];
-  for(const d=new Date(start);d<=today;d.setDate(d.getDate()+1))out.push(key(new Date(d)));
+  const start=fromKey(dataKeys[0]);const todayStr=todayKey();const out=[];
+  for(const d=new Date(start);key(d)<=todayStr;d.setDate(d.getDate()+1))out.push(key(new Date(d)));
   return out.length?out:lastDays(30);
 }
 function renderNetSparkline(){
