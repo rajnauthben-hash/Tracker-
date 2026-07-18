@@ -437,8 +437,11 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 
 <style>
 /* === GRAPH PROPORTION FIX: fit 7-day charts without horizontal stretching === */
-.duo-graph{height:200px!important;margin-top:8px!important;margin-bottom:12px!important;}
+.duo-graph{height:200px!important;margin-top:8px!important;margin-bottom:12px!important;overflow:visible!important;}
 .duo-graph .chart-scroll{left:40px!important;right:4px!important;}
+.chart-tooltip{z-index:20!important;}
+.duo-graph .chart-y-axis{z-index:8!important;}
+
 .duo-graph .chart-y-axis{width:40px!important;}
 .duo-graph .chart-y-axis .y-lbl{font-size:10px!important;right:6px!important;}
 .duo-graph svg{width:var(--chart-width,100%)!important;min-width:var(--chart-width,100%)!important;height:100%!important;}
@@ -911,8 +914,9 @@ function attachChartInteraction(svg,keys,vals,kind){
       const scrollRect=scroll.getBoundingClientRect();
       const left=(scrollRect.left-wrapRect.left)+(p.x/(vb.width||340))*rect.width-scroll.scrollLeft;
       const top=(scrollRect.top-wrapRect.top)+(p.y/(vb.height||174))*rect.height;
-      tip.style.left=Math.max(54,Math.min(wrap.clientWidth-48,left))+'px';
-      tip.style.top=Math.max(24,top)+'px';
+      const axisW=wrap.querySelector('.chart-y-axis')?.offsetWidth||40;
+      tip.style.left=Math.max(axisW+8,Math.min(wrap.clientWidth-54,left))+'px';
+      tip.style.top=Math.max(28,Math.min(wrap.clientHeight-40,top))+'px';
       tip.innerHTML=`<b>${formatVal(v)}</b><small>${formatDate(k)}${kind==='money'?' · net worth':''}</small>`;
       tip.classList.add('show');
     }
